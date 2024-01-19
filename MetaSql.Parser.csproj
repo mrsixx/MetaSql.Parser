@@ -1,8 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>MetaSql.Parser</Title>
+    <Authors>Matheus Ribeiro</Authors>
+    <Description>MetaSql.Parser is a C# .NET Standard 2.1 library designed to extend the SQL language from its grammar</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/mrsixx/MetaSql.Parser/</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageTags>parser;sql;metadata;ansi;metasql;grammar;customsql</PackageTags>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <FileVersion>1.0.1</FileVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +35,17 @@
     <Antlr4 Update="Grammar\TSqlParser.g4">
       <CustomToolNamespace>MetaSql.Parser</CustomToolNamespace>
     </Antlr4>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
