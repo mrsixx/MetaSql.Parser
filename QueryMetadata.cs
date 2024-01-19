@@ -14,13 +14,13 @@ namespace MetaSql.Parser
 
         public List<QueryRelation> Relations { get; }
 
-        public List<Filter> Filters { get; }
+        public List<QueryFilter> Filters { get; }
 
         public QueryMetadata()
         {
             Tables = new List<QueryTable>();
             Relations = new List<QueryRelation>();
-            Filters = new List<Filter>();
+            Filters = new List<QueryFilter>();
         }
 
         public void CopyQuery(string realQuery)

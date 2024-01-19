@@ -119,7 +119,7 @@ namespace MetaSql.Parser
         {
             if (!context.IsEmpty && context.GetChild(1) is TerminalNodeImpl filterName && context.GetChild(2) is Efilter_data_typeContext dataType)
             {
-                var filter = new Filter
+                var filter = new QueryFilter
                 {
                     Name = filterName.GetText().Replace("&", String.Empty),
                     Type = _filterTypeFactory.GetType(dataType.GetText()),
@@ -140,6 +140,14 @@ namespace MetaSql.Parser
                 else if (context.children.Any(c => c is Efilter_detail_expressionContext))
                 {
                     filter.IsDetail = true;
+                }
+
+                if (context.children.Any(c => c is Efilter_hidden_expressionContext))
+                {
+                    if (!filter.HasDefaultValue)
+                        throw new InvalidOperationException("$O filtro escondido {filter.Name} deve conter um valor default.");
+                    
+                    filter.Hidden = true;
                 }
 
                 if (Metadata.Filters.Any(f => f.Name == filter.Name))

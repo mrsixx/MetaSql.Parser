@@ -2,7 +2,7 @@
 
 namespace MetaSql.Parser.Models
 {
-    public class Filter
+    public class QueryFilter
     {
         public string Name { get; internal set; }
 
@@ -15,6 +15,8 @@ namespace MetaSql.Parser.Models
         public string Text { get; internal set; }
 
         public bool IsDetail { get; internal set; }
+
+        public bool Hidden { get; internal set; }
 
         public bool HasAlias => Alias != default;
 

@@ -5,6 +5,6 @@ namespace MetaSql.Parser.Interfaces
 {
     internal interface IFilterValueFactory
     {
-        FilterValue GetValue(Filter filter, Efilter_default_expressionContext defaultExpressionCtx);
+        FilterValue GetValue(QueryFilter filter, Efilter_default_expressionContext defaultExpressionCtx);
     }
 }

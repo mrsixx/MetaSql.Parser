@@ -1,5 +1,6 @@
 ﻿using MetaSql.Parser.Interfaces;
 using System;
+using System.Globalization;
 
 namespace MetaSql.Parser.Models
 {
@@ -12,7 +13,7 @@ namespace MetaSql.Parser.Models
 
         public decimal Value { get; internal set; }
 
-        public string SqlFormattedValue => Convert.ToString(Value);
+        public string SqlFormattedValue => Convert.ToString(Value, CultureInfo.InvariantCulture);
 
         public bool Equals(decimal other) => Value.Equals(other);
     }

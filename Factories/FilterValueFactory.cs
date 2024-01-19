@@ -11,7 +11,7 @@ namespace MetaSql.Parser.Factories
 {
     internal class FilterValueFactory : IFilterValueFactory
     {
-        public FilterValue GetValue(Filter filter, Efilter_default_expressionContext defaultExpressionCtx)
+        public FilterValue GetValue(QueryFilter filter, Efilter_default_expressionContext defaultExpressionCtx)
         {
             // funções 
             if (defaultExpressionCtx.GetChild(1) is TerminalNodeImpl functionValue)
@@ -69,9 +69,12 @@ namespace MetaSql.Parser.Factories
                             return new FilterDecimalValue(@decimal);
                         throw new MismatchedTypesException(strValue, typeof(decimal));
                     case FilterTypeEnum.FilterType.Date:
-                    case FilterTypeEnum.FilterType.DateTime:
                         if (DateTime.TryParse(strValue.Replace("\'", String.Empty), out DateTime @date))
-                            return new FilterDateTimeValue(@date);
+                            return new FilterDateValue(@date);
+                        throw new MismatchedTypesException(strValue, typeof(DateTime));
+                    case FilterTypeEnum.FilterType.DateTime:
+                        if (DateTime.TryParse(strValue.Replace("\'", String.Empty), out DateTime @datetime))
+                            return new FilterDateTimeValue(@datetime);
                         throw new MismatchedTypesException(strValue, typeof(DateTime));
                     case FilterTypeEnum.FilterType.Text:
                         return new FilterTextValue(strValue.Replace("\'", String.Empty));
