@@ -1233,7 +1233,7 @@ SINGLE_QUOTE:       '\'';
 SQUARE_BRACKET_ID:  '[' (~']' | ']' ']')* ']';
 LOCAL_ID:           '@' ([A-Z_$@#0-9] | FullWidthLetter)*;
 TEMP_ID:            '#' ([A-Z_$@#0-9] | FullWidthLetter)*;
-ECALC_ID:           '&' ([A-Z_$@#0-9] | FullWidthLetter)*;
+ECALC_ID:           '&' ([A-Z_$@#:0-9] | FullWidthLetter)*;
 DECIMAL:             DEC_DIGIT+;
 ID:                  ( [A-Z_#] | FullWidthLetter) ( [A-Z_#$@0-9] | FullWidthLetter )*;
 STRING : 'N'? '\'' (~'\'' | '\'\'')* '\'';

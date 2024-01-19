@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using static MetaSql.Parser.TSqlParser;
 
 namespace MetaSql.Parser
@@ -88,13 +89,18 @@ namespace MetaSql.Parser
         {
             var query = OriginalQuery;
 
-            Metadata.Filters.ForEach(f => query = query.Replace(f.Text, String.Empty).Trim());
-            Metadata.RealQuery = query;
+            Metadata.Filters.ForEach(f => query = Regex.Replace(query, $"{f.Text}(;)?", String.Empty));
+            Metadata.ResultQuery = Regex.Replace(query, @"(\s){2,}|(\n)", " ", RegexOptions.IgnoreCase).Trim();
 
-            foreach (var match in System.Text.RegularExpressions.Regex.Matches(query, "&([a-zA-Z0-9$@#])+"))
+            var pattern = "&([a-zA-Z_$@#:0-9])+";
+            Debug.WriteLine("Filters: ");
+            foreach (var match in Regex.Matches(Metadata.ResultQuery, pattern))
             {
-                if (!Metadata.Filters.Any(f => f.Name == match.ToString()))
+                var filter = Metadata.Filters.Find(f => $"&{f.Name}" == match.ToString());
+                if (filter is null)
                     throw new UndeclaredFilterException(match.ToString());
+                Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, $"&{filter.Name}", $"@{filter.Name}");
+                Debug.WriteLine($"{filter.Name}: {filter.Type}");
             }
 
             if (Metadata.Relations.Count <= 0)
@@ -115,7 +121,7 @@ namespace MetaSql.Parser
             {
                 var filter = new Filter
                 {
-                    Name = filterName.GetText(),
+                    Name = filterName.GetText().Replace("&", String.Empty),
                     Type = _filterTypeFactory.GetType(dataType.GetText()),
                     Text = context.Start.InputStream.GetText(new Interval(context.Start.StartIndex, context.Stop.StopIndex))
                 };

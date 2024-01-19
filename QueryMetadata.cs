@@ -8,7 +8,7 @@ namespace MetaSql.Parser
 {
     public class QueryMetadata
     {
-        public string RealQuery { get; set; }
+        public string ResultQuery { get; set; }
 
         public List<QueryTable> Tables { get; }
 
