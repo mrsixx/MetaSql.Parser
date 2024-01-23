@@ -9,7 +9,7 @@ namespace MetaSql.Parser.Models
     {
         public FilterDateValue(DateTime value)
         {
-            Value = value;
+            Value = value.Date;
         }
 
         public DateTime Value { get; internal set; }
