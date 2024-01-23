@@ -17,5 +17,7 @@ namespace MetaSql.Parser.Models
         public string SqlFormattedValue => $"'{Value}'";
 
         public bool Equals(string other) => Value.Equals(other);
+        
+        public object GetValue() => Value;
     }
 }

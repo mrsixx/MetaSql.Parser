@@ -17,5 +17,6 @@ namespace MetaSql.Parser.Models
 
         public bool Equals(int other) => Value.Equals(other);
 
+        public object GetValue() => Value;
     }
 }

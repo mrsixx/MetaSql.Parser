@@ -3,5 +3,7 @@
     public interface ISqlConstant
     {
         string SqlFormattedValue { get; }
+
+        object GetValue();
     }
 }

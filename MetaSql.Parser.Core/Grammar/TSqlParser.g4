@@ -2965,7 +2965,7 @@ execute_body_batch
 
 //https://docs.microsoft.com/it-it/sql/t-sql/language-elements/execute-transact-sql?view=sql-server-ver15
 execute_body
-    : (return_status=LOCAL_ID '=')? (func_proc_name_server_database_schema | execute_var_string)  execute_statement_arg?
+    : (return_status=(LOCAL_ID|ECALC_ID) '=')? (func_proc_name_server_database_schema | execute_var_string)  execute_statement_arg?
     | '(' execute_var_string (',' execute_var_string)* ')' (AS (LOGIN | USER) '=' STRING)? (AT_KEYWORD linkedServer=id_)?
     | AS (
             (LOGIN | USER) '=' STRING
@@ -2981,7 +2981,7 @@ execute_statement_arg
     ;
 
 execute_statement_arg_named
-    : name=LOCAL_ID '=' value=execute_parameter
+    : name=(LOCAL_ID|ECALC_ID) '=' value=execute_parameter
     ;
 
 execute_statement_arg_unnamed
@@ -2989,12 +2989,12 @@ execute_statement_arg_unnamed
     ;
 
 execute_parameter
-    : (constant | LOCAL_ID (OUTPUT | OUT)? | id_ | DEFAULT | NULL_)
+    : (constant | (LOCAL_ID|ECALC_ID) (OUTPUT | OUT)? | id_ | DEFAULT | NULL_)
     ;
 
 execute_var_string
-    : LOCAL_ID (OUTPUT | OUT)? ('+' LOCAL_ID ('+' execute_var_string)?)?
-    | STRING ('+' LOCAL_ID ('+' execute_var_string)?)?
+    : (LOCAL_ID|ECALC_ID) (OUTPUT | OUT)? ('+' (LOCAL_ID|ECALC_ID) ('+' execute_var_string)?)?
+    | STRING ('+' (LOCAL_ID|ECALC_ID) ('+' execute_var_string)?)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ff848791.aspx

@@ -16,5 +16,7 @@ namespace MetaSql.Parser.Models
         public string SqlFormattedValue => Convert.ToString(Value, CultureInfo.InvariantCulture);
 
         public bool Equals(decimal other) => Value.Equals(other);
+
+        public object GetValue() => Value;
     }
 }

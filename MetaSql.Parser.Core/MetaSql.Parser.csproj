@@ -5,15 +5,26 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>MetaSql.Parser</Title>
     <Authors>Matheus Ribeiro</Authors>
-    <Description>MetaSql.Parser is a C# .NET Standard 2.1 library designed to extend the SQL language from its grammar</Description>
+    <Description>MetaSql.Parser is a C# .NET Standard 2.0 library designed to extend the SQL language from its grammar</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/mrsixx/MetaSql.Parser/</RepositoryUrl>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageTags>parser;sql;metadata;ansi;metasql;grammar;customsql</PackageTags>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <FileVersion>2.0.0</FileVersion>
-    <Version>2.0.0</Version>
+    <AssemblyVersion>2.1.0</AssemblyVersion>
+    <FileVersion>2.1.0</FileVersion>
+    <Version>2.1.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Antlr4" Version="4.6.6">

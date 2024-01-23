@@ -17,5 +17,8 @@ namespace MetaSql.Parser.Models
         public string SqlFormattedValue => $"'{Value:yyyy-MM-dd}'";
 
         public bool Equals(DateTime other) => Value.Equals(other);
+        
+        public object GetValue() => Value;
+
     }
 }

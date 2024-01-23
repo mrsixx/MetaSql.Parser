@@ -5,6 +5,7 @@ using MetaSql.Parser.Factories;
 using MetaSql.Parser.Interfaces;
 using MetaSql.Parser.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -28,6 +29,7 @@ namespace MetaSql.Parser
         {
             OriginalQuery = query;
             Metadata = new QueryMetadata();
+            Metadata.ResultQuery = query;
             TableAliases = new Dictionary<string, string>();
             _filterTypeFactory = new FilterTypeFactory();
             _filterValueFactory = new FilterValueFactory();
@@ -87,10 +89,9 @@ namespace MetaSql.Parser
 
         public override void ExitSelect_statement([NotNull] TSqlParser.Select_statementContext context)
         {
-            var query = OriginalQuery;
+            Metadata.Filters.ForEach(f => Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, $"{f.Text}(;)?", String.Empty));
 
-            Metadata.Filters.ForEach(f => query = Regex.Replace(query, $"{f.Text}(;)?", String.Empty));
-            Metadata.ResultQuery = Regex.Replace(query, @"(\s){2,}|(\n)", " ", RegexOptions.IgnoreCase).Trim();
+            Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, @"(\s){2,}|(\n)", " ", RegexOptions.IgnoreCase).Trim();
 
             var pattern = "&([a-zA-Z_$@#:0-9])+";
             Debug.WriteLine("Filters: ");
@@ -113,6 +114,30 @@ namespace MetaSql.Parser
             Debug.WriteLine("Relations: ");
             foreach (var relation in Metadata.Relations)
                 Debug.WriteLine($"{relation.LeftTable} <-> {relation.RightTable}");
+        }
+
+        public override void EnterExecute_statement([NotNull] Execute_statementContext context)
+        {
+            var execute = new QueryExecute();
+            Metadata.Executes.Add(execute);
+            execute.Name = context.execute_body().func_proc_name_server_database_schema().GetText();
+            execute.Text = context.Start.InputStream.GetText(new Interval(context.Start.StartIndex, context.Stop.StopIndex));
+            
+            Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, $"{execute.Text}(;)?", String.Empty);
+
+            foreach (var child in context.execute_body().execute_statement_arg().children)
+            {
+                if(child is Execute_statement_arg_unnamedContext unnamed)
+                    execute.Arguments.Add(unnamed.GetText().Replace("&", String.Empty));
+                else if (child is Execute_statement_argContext named)
+                    execute.Arguments.Add(named.GetText().Replace("&", String.Empty));
+            }
+            execute.Arguments.ForEach(argument => execute.Text = Regex.Replace(execute.Text, $"&{argument}", $"@{argument}"));
+        }
+
+        public override void ExitExecute_statement([NotNull] Execute_statementContext context)
+        {
+            base.ExitExecute_statement(context);
         }
 
         public override void EnterEfilter_statement([NotNull] TSqlParser.Efilter_statementContext context)
