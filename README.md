@@ -1,5 +1,7 @@
 # MetaSql.Parser
 
+[![.NET](https://github.com/mrsixx/MetaSql.Parser/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/mrsixx/MetaSql.Parser/actions/workflows/dotnet.yml)
+
 ## Overview
 
 **MetaSql.Parser** is a C# .NET Standard 2.0 library designed to extend the SQL language from its grammar. The primary purpose of this parser is to read SQL queries and extract ANSI SQL metadata (tables, columns) along with extended metadata (filter statements, etc.).
