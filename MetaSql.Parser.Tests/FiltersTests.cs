@@ -18,8 +18,8 @@ namespace MetaSql.Tests
         [Fact]
         public void QueryWithCustomFilters()
         {
-            var query = @"EFILTER &filtroDt:De DATE 'Cdata de' DEFAULT ontem;
-                        EFILTER &filtroDt:Ate DATE AS 'Cdata até' DEFAULT hoje;
+            var query = @"EFILTER &filtroDt:De DATE 'Cdata de' DEFAULT ontem();
+                        EFILTER &filtroDt:Ate DATE AS 'Cdata até' DEFAULT hoje();
                         select first 10 * from arqos
                             where (1=1)
 	                        and cdata between &filtroDt:De and &filtroDt:Ate
@@ -69,7 +69,7 @@ namespace MetaSql.Tests
         public void QueryWithCustomFiltersRequiredParameters()
         {
             var query = @"EFILTER &filtroDtDe DATE 'Cdata de';
-                        EFILTER &filtroDtAte DATE DEFAULT hoje;
+                        EFILTER &filtroDtAte DATE DEFAULT hoje();
                         select first 10 * from arqos
                             where (1=1)
 	                        and cdata between &filtroDtDe and &filtroDtAte
@@ -94,13 +94,14 @@ namespace MetaSql.Tests
         [Fact]
         public void QueryWithCustomFiltersMismatchedDefaultValues()
         {
-            Assert.Throws<InvalidFunctionTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro1 DATE DEFAULT diaatual;"));
-            Assert.Throws<InvalidFunctionTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro2 DATETIME DEFAULT diaatual;"));
-            Assert.Throws<InvalidFunctionTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro4 TEXT DEFAULT anoatual;"));
-            Assert.Throws<InvalidFunctionTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro5 DATE DEFAULT usuario;"));
+            Assert.Throws<UnrecognizedTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro1 DATE DEFAULT diaatual;"));
+            Assert.Throws<InvalidFunctionTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro1 DATE DEFAULT diaatual();"));
+            Assert.Throws<InvalidFunctionTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro2 DATETIME DEFAULT diaatual();"));
+            Assert.Throws<InvalidFunctionTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro4 TEXT DEFAULT anoatual();"));
+            Assert.Throws<InvalidFunctionTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro5 DATE DEFAULT usuario();"));
             Assert.Throws<MismatchedTypesException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro6 DATE DEFAULT 50.2;"));
             Assert.Throws<MismatchedTypesException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro7 DATE DEFAULT 'Hakuna Matata';"));
-            Assert.Throws<UnrecognizedTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro8 DATE DEFAULT Excelsior"));
+            Assert.Throws<UnrecognizedTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro8 DATE DEFAULT Excelsior()"));
         }
 
         [Fact]
@@ -114,8 +115,8 @@ namespace MetaSql.Tests
         [Fact]
         public void QueryWithDuplicatedCustomFilterName()
         {
-            var query = @"   EFILTER &filtroOntem DATE DEFAULT ontem;
-                            EFILTER &filtroOntem DATE DEFAULT hoje;
+            var query = @"   EFILTER &filtroOntem DATE DEFAULT ontem();
+                            EFILTER &filtroOntem DATE DEFAULT hoje();
 
                         select first 10 * from arqos
                             where (1=1)
@@ -128,14 +129,14 @@ namespace MetaSql.Tests
         public void QueryWithCustomFiltersDefaultValueFunction()
         {
             var query = @"
-                        EFILTER &filtro1 INTEGER DEFAULT usuario;
-                        EFILTER &filtro2 INTEGER DEFAULT diaatual;
-                        EFILTER &filtro3 INTEGER DEFAULT mesatual;
-                        EFILTER &filtro4 INTEGER DEFAULT anoatual;
-                        EFILTER &filtro5 DATE DEFAULT ontem;
-                        EFILTER &filtro6 DATE DEFAULT hoje;
-                        EFILTER &filtro7 DATE DEFAULT inicio_mes_atual;
-                        EFILTER &filtro8 DATE DEFAULT fim_mes_atual;
+                        EFILTER &filtro1 INTEGER DEFAULT usuario();
+                        EFILTER &filtro2 INTEGER DEFAULT diaatual();
+                        EFILTER &filtro3 INTEGER DEFAULT mesatual();
+                        EFILTER &filtro4 INTEGER DEFAULT anoatual();
+                        EFILTER &filtro5 DATE DEFAULT ontem();
+                        EFILTER &filtro6 DATE DEFAULT hoje();
+                        EFILTER &filtro7 DATE DEFAULT inicio_mes_atual();
+                        EFILTER &filtro8 DATE DEFAULT fim_mes_atual();
 
                         select first 10 * from arqos
                             where (1=1)
@@ -235,8 +236,8 @@ namespace MetaSql.Tests
         [Fact]
         public void QueryWithHiddenCustomFilter()
         {
-            var query = @"EFILTER &filtroOntem DATE HIDDEN DEFAULT ontem;
-                        EFILTER &filtroHoje DATE DEFAULT hoje;
+            var query = @"EFILTER &filtroOntem DATE HIDDEN DEFAULT ontem();
+                        EFILTER &filtroHoje DATE DEFAULT hoje();
 
                         select first 10 * from arqos
                             where (1=1)

@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using static MetaSql.Parser.TSqlParser;
 
@@ -89,8 +90,8 @@ namespace MetaSql.Parser
 
         public override void ExitSelect_statement([NotNull] TSqlParser.Select_statementContext context)
         {
-            Metadata.Filters.ForEach(f => Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, $"{f.Text}(;)?", String.Empty));
-
+            Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "(?<=EFILTER)(.*)(?=;)", String.Empty, RegexOptions.IgnoreCase);
+            Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "EFILTER;", String.Empty, RegexOptions.IgnoreCase);
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, @"(\s){2,}|(\n)", " ", RegexOptions.IgnoreCase).Trim();
 
             var pattern = "&([a-zA-Z_$@#:0-9])+";

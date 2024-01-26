@@ -24,6 +24,15 @@ namespace MetaSql.Tests
 
 
         [Fact]
+        public void SelectISqlFirstSkipClauses()
+        {
+            var metadata = _queryParser.ExtractQueryMetadata("SELECT FIRST 10 skip 100 * FROM CLIENTES WHERE UUID = 0");
+            Assert.Single(metadata.Tables);
+            Assert.Contains(metadata.Tables, table => table.TableName == "CLIENTES");
+            Assert.Empty(metadata.Relations);
+        }
+
+        [Fact]
         public void QueryIfMultipleJoins()
         {
             var query = @"SELECT m.maquina AS maquina,
@@ -56,13 +65,13 @@ namespace MetaSql.Tests
         public void ExtractRealSqlQuery()
         {
             var extendedQuery = @"EFILTER &filtroDtDe DATE 'Cdata de';
-                        EFILTER &filtroDtAte DATE DEFAULT hoje;
-                        select first 10 * from arqos
+                        EFILTER &filtroDtAte DATE DEFAULT hoje();
+                        select first 10 skip 100 * from arqos
                             where (1=1)
 	                        and cdata between &filtroDtDe and &filtroDtAte
                             order by cdata desc";
 
-            var sqlQuery = "select first 10 * from arqos where (1=1) and cdata between @filtroDtDe and @filtroDtAte order by cdata desc";
+            var sqlQuery = "select first 10 skip 100 * from arqos where (1=1) and cdata between @filtroDtDe and @filtroDtAte order by cdata desc";
 
             var metadata = _queryParser.ExtractQueryMetadata(extendedQuery);
 

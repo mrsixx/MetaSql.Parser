@@ -14,40 +14,40 @@ namespace MetaSql.Parser.Factories
         public FilterValue GetValue(QueryFilter filter, Efilter_default_expressionContext defaultExpressionCtx)
         {
             // funções 
-            if (defaultExpressionCtx.GetChild(1) is TerminalNodeImpl functionValue)
+            if (defaultExpressionCtx.GetChild(1) is Efilter_default_expression_functionContext functionValue)
             {
                 var strValue = functionValue.GetText();
                 switch (strValue.ToUpperInvariant())
                 {
-                    case "USUARIO":
+                    case "USUARIO()":
                         if (filter.Type != FilterTypeEnum.FilterType.Integer)
                             throw new InvalidFunctionTypeException(strValue, FilterTypeEnum.FilterType.Integer);
                         return new FilterFunctionValue(DefaultValueFunction.Usuario);
-                    case "DIAATUAL":
+                    case "DIAATUAL()":
                         if (filter.Type != FilterTypeEnum.FilterType.Integer)
                             throw new InvalidFunctionTypeException(strValue, FilterTypeEnum.FilterType.Integer);
                         return new FilterFunctionValue(DefaultValueFunction.DiaAtual);
-                    case "MESATUAL":
+                    case "MESATUAL()":
                         if (filter.Type != FilterTypeEnum.FilterType.Integer)
                             throw new InvalidFunctionTypeException(strValue, FilterTypeEnum.FilterType.Integer);
                         return new FilterFunctionValue(DefaultValueFunction.MesAtual);
-                    case "ANOATUAL":
+                    case "ANOATUAL()":
                         if (filter.Type != FilterTypeEnum.FilterType.Integer)
                             throw new InvalidFunctionTypeException(strValue, FilterTypeEnum.FilterType.Integer);
                         return new FilterFunctionValue(DefaultValueFunction.AnoAtual);
-                    case "INICIO_MES_ATUAL":
+                    case "INICIO_MES_ATUAL()":
                         if (filter.Type != FilterTypeEnum.FilterType.Date && filter.Type != FilterTypeEnum.FilterType.DateTime)
                             throw new InvalidFunctionTypeException(strValue, FilterTypeEnum.FilterType.DateTime);
                         return new FilterFunctionValue(DefaultValueFunction.InicioMesAtual);
-                    case "FIM_MES_ATUAL":
+                    case "FIM_MES_ATUAL()":
                         if (filter.Type != FilterTypeEnum.FilterType.Date && filter.Type != FilterTypeEnum.FilterType.DateTime)
                             throw new InvalidFunctionTypeException(strValue, FilterTypeEnum.FilterType.DateTime);
                         return new FilterFunctionValue(DefaultValueFunction.FimMesAtual);
-                    case "ONTEM":
+                    case "ONTEM()":
                         if (filter.Type != FilterTypeEnum.FilterType.Date && filter.Type != FilterTypeEnum.FilterType.DateTime)
                             throw new InvalidFunctionTypeException(strValue, FilterTypeEnum.FilterType.DateTime);
                         return new FilterFunctionValue(DefaultValueFunction.Ontem);
-                    case "HOJE":
+                    case "HOJE()":
                         if (filter.Type != FilterTypeEnum.FilterType.Date && filter.Type != FilterTypeEnum.FilterType.DateTime)
                             throw new InvalidFunctionTypeException(strValue, FilterTypeEnum.FilterType.DateTime);
                         return new FilterFunctionValue(DefaultValueFunction.Hoje);

@@ -2785,10 +2785,23 @@ efilter_detail_expression
     ;
 
 efilter_default_expression
-    : DEFAULT function=(USUARIO|HOJE|ONTEM|DIAATUAL|MESATUAL|ANOATUAL|INICIOMES|FIMMES)
+    : DEFAULT function=efilter_default_expression_function
     | DEFAULT constant_expr=constant
     ;
+efilter_default_expression_function
+    : efilter_default_expression_functions '(' ')'
+    ;
 
+efilter_default_expression_functions
+    : USUARIO
+    | HOJE
+    | ONTEM
+    | DIAATUAL
+    | MESATUAL
+    | ANOATUAL
+    | INICIOMES
+    | FIMMES
+    ;
 xml_declaration
     : xml_namespace_uri=STRING AS id_
     | DEFAULT STRING
@@ -3786,6 +3799,7 @@ special_list
 constant_LOCAL_ID
     : constant
     | LOCAL_ID
+    | ECALC_ID
     ;
 
 // Expression.
@@ -3817,7 +3831,7 @@ time_zone
     ;
 
 primitive_expression
-    : DEFAULT | NULL_ | LOCAL_ID | primitive_constant
+    : DEFAULT | NULL_ | LOCAL_ID | ECALC_ID | primitive_constant
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/case-transact-sql
@@ -3902,11 +3916,28 @@ query_specification
       // https://msdn.microsoft.com/en-us/library/ms177673.aspx
       (GROUP BY ((groupByAll=ALL? groupBys+=group_by_item (',' groupBys+=group_by_item)*) | GROUPING SETS '(' groupSets+=grouping_sets_item (',' groupSets+=grouping_sets_item)* ')'))?
       (HAVING having=search_condition)?
+    | SELECT first_clause? skip_clause? 
+      columns=select_list
+      // https://msdn.microsoft.com/en-us/library/ms188029.aspx
+      (INTO into=table_name)?
+      (FROM from=table_sources)?
+      (WHERE where=search_condition)?
+      // https://msdn.microsoft.com/en-us/library/ms177673.aspx
+      (GROUP BY ((groupByAll=ALL? groupBys+=group_by_item (',' groupBys+=group_by_item)*) | GROUPING SETS '(' groupSets+=grouping_sets_item (',' groupSets+=grouping_sets_item)* ')'))?
+      (HAVING having=search_condition)?
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms189463.aspx
 top_clause
     : TOP (top_percent | top_count) (WITH TIES)?
+    ;
+
+first_clause
+    : FIRST integer_expression=expression
+    ;
+    
+skip_clause
+    : SKIP_KEYWORD integer_expression=expression
     ;
 
 top_percent
