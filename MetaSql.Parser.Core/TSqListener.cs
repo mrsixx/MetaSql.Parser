@@ -90,8 +90,12 @@ namespace MetaSql.Parser
 
         public override void ExitSelect_statement([NotNull] TSqlParser.Select_statementContext context)
         {
+            //remove efilters
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "(?<=EFILTER)(.*)(?=;)", String.Empty, RegexOptions.IgnoreCase);
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "EFILTER;", String.Empty, RegexOptions.IgnoreCase);
+            // remove comentarios de uma linha só
+            Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "--(.*)", String.Empty, RegexOptions.IgnoreCase);
+            // substitui espaços multiplos e quebras de linha por um espaço só
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, @"(\s){2,}|(\n)", " ", RegexOptions.IgnoreCase).Trim();
 
             var pattern = "&([a-zA-Z_$@#:0-9])+";

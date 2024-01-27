@@ -130,5 +130,26 @@ namespace MetaSql.Tests
             Assert.Contains(metadata.Executes, e => e.Arguments.Contains("filtro2"));
             Assert.Contains(metadata.Executes, e => e.Text.Equals(sqlExec));
         }
+
+
+        [Fact]
+        public void QueryWithComments()
+        {
+            var extendedQuery = @"-- filtro p/ data de ontem
+                        EFILTER &filtroOntem DATE HIDDEN DEFAULT ontem();
+                        
+                        select first 10 * from arqos
+                        /*
+                            comentarios multilinha não são removidos
+                        */
+                            where (1=1)
+                            -- where 2=1
+	                        and cdata > &filtroOntem
+                            order by cdata desc";
+            var query = "select first 10 * from arqos /* comentarios multilinha não são removidos */ where (1=1) and cdata > @filtroOntem order by cdata desc";
+
+            var metadata = _queryParser.ExtractQueryMetadata(extendedQuery);
+            Assert.Equal(query, metadata.ResultQuery);
+        }
     }
 }
