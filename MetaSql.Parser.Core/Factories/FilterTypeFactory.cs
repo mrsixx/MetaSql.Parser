@@ -14,6 +14,7 @@ namespace MetaSql.Parser.Factories
                 case "DATE": return FilterTypeEnum.FilterType.Date;
                 case "DATETIME": return FilterTypeEnum.FilterType.DateTime;
                 case "TEXT": return FilterTypeEnum.FilterType.Text;
+                case "DATETIMERANGE": return FilterTypeEnum.FilterType.DateTimeRange;
                 default: return FilterTypeEnum.FilterType.Undefined;
             }
         }

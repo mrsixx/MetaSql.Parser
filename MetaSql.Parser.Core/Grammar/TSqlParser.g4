@@ -2787,10 +2787,21 @@ efilter_detail_expression
 efilter_default_expression
     : DEFAULT function=efilter_default_expression_function
     | DEFAULT constant_expr=constant
+    | DEFAULT range_expr=efilter_range_expr
     ;
+    
+efilter_range_expr
+    : '(' efilter_expression_function_or_constant COMMA efilter_expression_function_or_constant ')'
+    ;
+efilter_expression_function_or_constant
+    : efilter_default_expression_function
+    | constant
+    ;
+    
 efilter_default_expression_function
     : efilter_default_expression_functions '(' ')'
     ;
+
 
 efilter_default_expression_functions
     : USUARIO
@@ -5110,6 +5121,7 @@ efilter_data_type
     | EINTEGER
     | EDECIMAL
     | ETEXT
+    | EDATETIMERANGE
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms179899.aspx

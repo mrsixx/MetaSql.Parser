@@ -151,5 +151,21 @@ namespace MetaSql.Tests
             var metadata = _queryParser.ExtractQueryMetadata(extendedQuery);
             Assert.Equal(query, metadata.ResultQuery);
         }
+
+        [Fact]
+        public void ProcessRangeFilterInQuery()
+        {
+            var extendedQuery = @"EFILTER &filtroDt DATETIMERANGE 'Cdata' DEFAULT ('2024-04-01 12:35:00','2024-04-01 12:40:30');
+                        select first 10 skip 100 * from arqos
+                            where (1=1)
+	                        and cdata between &filtroDt:start and &filtroDt:end
+                            order by cdata desc";
+
+            var sqlQuery = "select first 10 skip 100 * from arqos where (1=1) and cdata between @filtroDtStart and @filtroDtEnd order by cdata desc";
+
+            var metadata = _queryParser.ExtractQueryMetadata(extendedQuery);
+
+            Assert.Equal(sqlQuery, metadata.ResultQuery);
+        }
     }
 }

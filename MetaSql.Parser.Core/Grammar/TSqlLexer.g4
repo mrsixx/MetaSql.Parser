@@ -1178,6 +1178,7 @@ EDECIMAL:                              'DECIMAL';
 EINTEGER:                              'INTEGER';
 EDATE:                                 'DATE';
 EDATETIME:                             'DATETIME';
+EDATETIMERANGE:                        'DATETIMERANGE';
 
 USUARIO:                               'USUARIO';
 DIAATUAL:                              'DIAATUAL';

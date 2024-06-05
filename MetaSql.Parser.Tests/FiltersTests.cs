@@ -18,23 +18,23 @@ namespace MetaSql.Tests
         [Fact]
         public void QueryWithCustomFilters()
         {
-            var query = @"EFILTER &filtroDt:De DATE 'Cdata de' DEFAULT ontem();
-                        EFILTER &filtroDt:Ate DATE AS 'Cdata até' DEFAULT hoje();
+            var query = @"EFILTER &filtroDtDe DATE 'Cdata de' DEFAULT ontem();
+                        EFILTER &filtroDtAte DATE AS 'Cdata até' DEFAULT hoje();
                         select first 10 * from arqos
                             where (1=1)
-	                        and cdata between &filtroDt:De and &filtroDt:Ate
+	                        and cdata between &filtroDtDe and &filtroDtAte
                             order by cdata desc";
 
             var metadata = _queryParser.ExtractQueryMetadata(query);
 
             Assert.Equal(2, metadata.Filters.Count);
             Assert.Contains(metadata.Filters,
-                filter => filter.Name == "filtroDt:De"
+                filter => filter.Name == "filtroDtDe"
                 && filter.Alias == "Cdata de"
                 && filter.DefaultValue is FilterFunctionValue defaultValue
                 && defaultValue.Equals(DefaultValueFunction.Ontem));
             Assert.Contains(metadata.Filters,
-                filter => filter.Name == "filtroDt:Ate"
+                filter => filter.Name == "filtroDtAte"
                 && filter.Alias == "Cdata até"
                 && filter.DefaultValue is FilterFunctionValue defaultValue
                 && defaultValue.Equals(DefaultValueFunction.Hoje));
@@ -258,6 +258,52 @@ namespace MetaSql.Tests
 	                        and cdata > &filtroOntem
                             order by cdata desc";
             Assert.Throws<InvalidOperationException>(() => _queryParser.ExtractQueryMetadata(query));
+        }
+
+        [Fact]
+        public void QueryWithRangeFunctionFilters()
+        {
+            var query = @"EFILTER &filtroDt DATETIMERANGE 'Cdata' DEFAULT (ontem(),hoje());
+                        select first 10 * from arqos
+                            where (1=1)
+	                        and cdata between &filtroDt[0] and &filtroDt[1]
+                            order by cdata desc";
+
+            var metadata = _queryParser.ExtractQueryMetadata(query);
+
+            Assert.Single(metadata.Filters);
+            Assert.Contains(metadata.Filters,
+                filter => filter.Name == "filtroDt"
+                && filter.Alias == "Cdata"
+                && filter.Type == Parser.Enums.FilterTypeEnum.FilterType.DateTimeRange
+                && filter.DefaultValue is FilterDatetimeRangeValue defaultValue
+                && defaultValue.Equals(new Tuple<FilterValue, FilterValue>(
+                    new FilterFunctionValue(DefaultValueFunction.Ontem), 
+                    new FilterFunctionValue(DefaultValueFunction.Hoje))
+                ));
+        }
+
+        [Fact]
+        public void QueryWithRangeLiteralValueFilters()
+        {
+            var query = @"EFILTER &filtroDt DATETIMERANGE 'Cdata' DEFAULT ('2024-04-01 12:35:00','2024-04-01 12:40:30');
+                        select first 10 * from arqos
+                            where (1=1)
+	                        and cdata between &filtroDt:start and &filtroDt:end
+                            order by cdata desc";
+
+            var metadata = _queryParser.ExtractQueryMetadata(query);
+
+            Assert.Single(metadata.Filters);
+            Assert.Contains(metadata.Filters,
+                filter => filter.Name == "filtroDt"
+                && filter.Alias == "Cdata"
+                && filter.Type == Parser.Enums.FilterTypeEnum.FilterType.DateTimeRange
+                && filter.DefaultValue is FilterDatetimeRangeValue defaultValue
+                && defaultValue.Equals(new Tuple<FilterValue, FilterValue>(
+                    new FilterDateTimeValue(new DateTime(2024, 4, 1, 12, 35, 0)),
+                    new FilterDateTimeValue(new DateTime(2024, 4, 1, 12, 40, 30)))
+                ));
         }
     }
 }

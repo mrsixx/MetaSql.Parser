@@ -102,10 +102,22 @@ namespace MetaSql.Parser
             Debug.WriteLine("Filters: ");
             foreach (var match in Regex.Matches(Metadata.ResultQuery, pattern))
             {
-                var filter = Metadata.Filters.Find(f => $"&{f.Name}" == match.ToString());
+                var matchStr = match.ToString();
+                var isRangeFilter = matchStr.Contains(":");
+                var filterName = !isRangeFilter ? matchStr : matchStr.Substring(0, matchStr.IndexOf(':'));
+                
+                var filter = Metadata.Filters.Find(f => $"&{f.Name}" == filterName);
                 if (filter is null)
-                    throw new UndeclaredFilterException(match.ToString());
-                Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, $"&{filter.Name}", $"@{filter.Name}");
+                    throw new UndeclaredFilterException(filterName);
+                
+                if (isRangeFilter)
+                {
+                    Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, $"&{filter.Name}:start", $"@{filter.Name}Start");
+                    Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, $"&{filter.Name}:end", $"@{filter.Name}End");
+                }
+                else
+                    Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, $"&{filter.Name}", $"@{filter.Name}");
+
                 Debug.WriteLine($"{filter.Name}: {filter.Type}");
             }
 
@@ -175,7 +187,7 @@ namespace MetaSql.Parser
                 if (context.children.Any(c => c is Efilter_hidden_expressionContext))
                 {
                     if (!filter.HasDefaultValue)
-                        throw new InvalidOperationException("$O filtro escondido {filter.Name} deve conter um valor default.");
+                        throw new InvalidOperationException($"$O filtro escondido {filter.Name} deve conter um valor default.");
                     
                     filter.Hidden = true;
                 }
