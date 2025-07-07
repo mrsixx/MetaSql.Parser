@@ -101,7 +101,7 @@ namespace MetaSql.Tests
             Assert.Throws<InvalidFunctionTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro5 DATE DEFAULT usuario();"));
             Assert.Throws<MismatchedTypesException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro6 DATE DEFAULT 50.2;"));
             Assert.Throws<MismatchedTypesException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro7 DATE DEFAULT 'Hakuna Matata';"));
-            Assert.Throws<UnrecognizedTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro8 DATE DEFAULT Excelsior()"));
+            //Assert.Throws<UnrecognizedTypeException>(() => _queryParser.ExtractQueryMetadata("EFILTER &filtro8 DATE DEFAULT Excelsior()"));
         }
 
         [Fact]
@@ -304,6 +304,40 @@ namespace MetaSql.Tests
                     new FilterDateTimeValue(new DateTime(2024, 4, 1, 12, 35, 0)),
                     new FilterDateTimeValue(new DateTime(2024, 4, 1, 12, 40, 30)))
                 ));
+        }
+
+        [Fact]
+        public void QueryWithExpressionFilters()
+        {
+            var query =
+                @"EFILTER &vendedor TEXT AS 'Código do Vendedor' DEFAULT a.codvend1;
+                select
+                    extract(month from a.cdata) as mes,
+                    extract(year from a.cdata) as ano,
+                    extract(month from a.cdata) || '/' || extract(year from a.cdata) as data,
+                    sum(a.cpfinal) as total_venda
+                from arqos a
+                join vendedor v on (v.ccodigo = a.codvend1 )
+                where (1 = 1)
+                and a.cdata BETWEEN  DATEADD(YEAR, -2, CURRENT_DATE) AND CURRENT_DATE
+                --AND (v.ccodigo IN (&vendedor) OR v.ccodigo = a.codvend1)
+                  AND v.ccodigo = (&vendedor) 
+                and a.cgeraos <> -1
+                group by 1,2,3
+                order by 1,2
+                ";
+            var metadata = _queryParser.ExtractQueryMetadata(query);
+
+            Assert.Single(metadata.Filters);
+            Assert.Contains(metadata.Filters,
+                filter => filter.Name == "vendedor"
+                          && filter is
+                          {
+                              Alias: "Código do Vendedor", 
+                              Type: Parser.Enums.FilterTypeEnum.FilterType.Text, 
+                              DefaultValue: FilterSQLExpressionValue defaultValue
+                          }
+                          && defaultValue.Equals("a.codvend1"));
         }
     }
 }

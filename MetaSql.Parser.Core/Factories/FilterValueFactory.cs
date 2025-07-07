@@ -41,6 +41,12 @@ namespace MetaSql.Parser.Factories
             // valores constantes
             if (defaultExpressionCtx.GetChild(1) is ConstantContext constant)
                 return GetFilterConstantValue(constant, filter.Type);
+            // expressions
+            if (defaultExpressionCtx.GetChild(1) is ExpressionContext expression)
+            {
+                var sqlExpression = expression.GetChild(0).GetText();
+                return new FilterSQLExpressionValue(sqlExpression);
+            }
 
             throw new UnrecognizedTypeException(filter.Name);
         }

@@ -2788,6 +2788,7 @@ efilter_default_expression
     : DEFAULT function=efilter_default_expression_function
     | DEFAULT constant_expr=constant
     | DEFAULT range_expr=efilter_range_expr
+    | DEFAULT other_stuff=expression
     ;
     
 efilter_range_expr
