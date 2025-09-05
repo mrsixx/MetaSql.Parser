@@ -10,7 +10,7 @@
             Date = 3,
             DateTime = 4,
             Text = 5,
-            DateTimeRange = 6
+            DateTimeRange = 6,
         }
     }
 }

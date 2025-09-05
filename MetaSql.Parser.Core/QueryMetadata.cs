@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System;
 using System.Runtime.Serialization;
+using System.Text;
 using MetaSql.Parser.Models;
 
 namespace MetaSql.Parser
@@ -16,6 +17,8 @@ namespace MetaSql.Parser
 
         public List<QueryFilter> Filters { get; }
 
+        public Dictionary<string, QueryLookup> Lookups { get; }
+
         public List<QueryExecute> Executes { get; }
 
         public QueryMetadata()
@@ -24,6 +27,7 @@ namespace MetaSql.Parser
             Relations = new List<QueryRelation>();
             Filters = new List<QueryFilter>();
             Executes = new List<QueryExecute>();
+            Lookups = new Dictionary<string, QueryLookup>();
         }
     }
 }

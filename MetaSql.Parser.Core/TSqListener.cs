@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
+using MetaSql.Parser.Enums;
 using static MetaSql.Parser.TSqlParser;
 
 namespace MetaSql.Parser
@@ -90,9 +91,14 @@ namespace MetaSql.Parser
 
         public override void ExitSelect_statement([NotNull] TSqlParser.Select_statementContext context)
         {
+            if (context.Parent != null && context.Parent is Elookup_statementContext)  return;
             //remove efilters
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "(?<=EFILTER)(.*)(?=;)", String.Empty, RegexOptions.IgnoreCase);
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "EFILTER;", String.Empty, RegexOptions.IgnoreCase);
+
+            //remove elookups
+            Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "(?<=ELOOKUP)(.*)(?=;)", String.Empty, RegexOptions.IgnoreCase);
+            Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "ELOOKUP;", String.Empty, RegexOptions.IgnoreCase);
             // remove comentarios de uma linha só
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "--(.*)", String.Empty, RegexOptions.IgnoreCase);
             // substitui espaços multiplos e quebras de linha por um espaço só
@@ -157,22 +163,38 @@ namespace MetaSql.Parser
             base.ExitExecute_statement(context);
         }
 
+        public override void EnterElookup_statement(Elookup_statementContext context)
+        {
+            if (context.id != null && context.querystr != null)
+            {
+                var lookup = context.id.Text;
+                var queryString = context.Start.InputStream.GetText(new Interval(context.querystr.Start.StartIndex,
+                    context.querystr.Stop.StopIndex));
+                var clause = "";
+                Metadata.Lookups.Add(lookup, new QueryLookup(lookup, queryString, clause));
+            }
+        }
+
         public override void EnterEfilter_statement([NotNull] TSqlParser.Efilter_statementContext context)
         {
-            if (!context.IsEmpty && context.GetChild(1) is TerminalNodeImpl filterName && context.GetChild(2) is Efilter_data_typeContext dataType)
+            if (!context.IsEmpty && context.GetChild(1) is TerminalNodeImpl filterName)
             {
                 var filter = new QueryFilter
                 {
                     Name = filterName.GetText().Replace("&", String.Empty),
-                    Type = _filterTypeFactory.GetType(dataType.GetText()),
-                    Text = context.Start.InputStream.GetText(new Interval(context.Start.StartIndex, context.Stop.StopIndex))
+                    Text = context.Start.InputStream.GetText(new Interval(context.Start.StartIndex, context.Stop.StopIndex)),
+                    Block = context.GetChild(0).GetText().ToUpper().Equals("EBLOCKFILTER")
                 };
 
-                if (context.children.Any(c => c is As_column_aliasContext))
-                {
-                    var asColumnAliasCtx = context.GetRuleContext<As_column_aliasContext>(0);
-                    filter.Alias = asColumnAliasCtx.GetChild<Column_aliasContext>(0).GetText().Replace("\'", String.Empty);
-                }
+
+                if (context.type != null) 
+                    filter.Type = _filterTypeFactory.GetType(context.type.GetText());
+
+                if (context.lookup != null && context.lookup.lookupid != null)
+                    filter.LookupSource = context.lookup.lookupid.Text;
+
+                if (context.alias != null)
+                    filter.Alias = context.alias.GetChild<Column_aliasContext>(0).GetText().Replace("\'", String.Empty);
 
                 if (context.children.Any(c => c is Efilter_default_expressionContext))
                 {
@@ -184,13 +206,14 @@ namespace MetaSql.Parser
                     filter.IsDetail = true;
                 }
 
-                if (context.children.Any(c => c is Efilter_hidden_expressionContext))
+                if (context.hidden != null)
                 {
                     if (!filter.HasDefaultValue)
                         throw new InvalidOperationException($"$O filtro escondido {filter.Name} deve conter um valor default.");
                     
                     filter.Hidden = true;
                 }
+
 
                 if (Metadata.Filters.Any(f => f.Name == filter.Name))
                     throw new InvalidOperationException($"{filter.Name} já está sendo utilizado como nome de outro filtro.");

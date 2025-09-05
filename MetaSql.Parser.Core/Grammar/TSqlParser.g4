@@ -48,6 +48,7 @@ sql_clauses
     : dml_clause SEMI?
     | cfl_statement SEMI?
     | another_statement SEMI?
+    | elookup_statement SEMI
     | efilter_statement SEMI
     | ddl_clause SEMI?
     | dbcc_clause SEMI?
@@ -2771,9 +2772,16 @@ declare_statement
     | DECLARE LOCAL_ID AS? xml_type_definition
     | WITH XMLNAMESPACES '(' xml_dec+=xml_declaration (',' xml_dec+=xml_declaration)* ')'
     ;
+efilter_alias 
+    : AS column_alias
+    ;
+
+elookup_statement
+    : ELOOKUP id=ELOOKUP_ID QUERY LR_BRACKET querystr=select_statement RR_BRACKET
+    ;
 
 efilter_statement
-    : EFILTER ECALC_ID efilter_data_type efilter_hidden_expression? as_column_alias? (efilter_default_expression|efilter_detail_expression)?
+    : (EFILTER|EBLOCKFILTER) id=ECALC_ID type=efilter_data_type hidden=efilter_hidden_expression? alias=as_column_alias? lookup=efilter_elookup_expression? (efilter_default_expression|efilter_detail_expression)?
     ;
 
 efilter_hidden_expression
@@ -2814,6 +2822,11 @@ efilter_default_expression_functions
     | INICIOMES
     | FIMMES
     ;
+
+efilter_elookup_expression
+    : EDATASET LR_BRACKET lookupid=ELOOKUP_ID RR_BRACKET
+    ;
+
 xml_declaration
     : xml_namespace_uri=STRING AS id_
     | DEFAULT STRING

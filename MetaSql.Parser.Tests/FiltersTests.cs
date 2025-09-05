@@ -339,5 +339,100 @@ namespace MetaSql.Tests
                           }
                           && defaultValue.Equals("a.codvend1"));
         }
+
+        [Fact]
+        public void QueryWithLookupFilters()
+        {
+            var query =
+                @"ELOOKUP $lookupVendedores QUERY(SELECT CODSEQ, IDENT FROM SENHA WHERE UPPER(IDENT) LIKE UPPER('#term%'));
+                EFILTER &vendedor INTEGER AS 'Código do Vendedor' DATASET($lookupVendedores) DEFAULT a.codvend1;
+
+                select
+                    extract(month from a.cdata) as mes,
+                    extract(year from a.cdata) as ano,
+                    extract(month from a.cdata) || '/' || extract(year from a.cdata) as data,
+                    sum(a.cpfinal) as total_venda
+                from arqos a
+                join vendedor v on (v.ccodigo = a.codvend1)
+                where (1 = 1)
+                and a.cdata BETWEEN  DATEADD(YEAR, -2, CURRENT_DATE) AND CURRENT_DATE
+                --AND (v.ccodigo IN (&vendedor) OR v.ccodigo = a.codvend1)
+                  AND v.ccodigo IN (&vendedor) 
+                and a.cgeraos <> -1
+                group by 1,2,3
+                order by 1,2
+                ";
+
+
+            var resultQuery =
+                @"select extract(month from a.cdata) as mes, extract(year from a.cdata) as ano, extract(month from a.cdata) || '/' || extract(year from a.cdata) as data, sum(a.cpfinal) as total_venda from arqos a join vendedor v on (v.ccodigo = a.codvend1) where (1 = 1) and a.cdata BETWEEN DATEADD(YEAR, -2, CURRENT_DATE) AND CURRENT_DATE AND v.ccodigo IN (@vendedor) and a.cgeraos <> -1 group by 1,2,3 order by 1,2";
+            
+            var metadata = _queryParser.ExtractQueryMetadata(query);
+
+            Assert.Equal(resultQuery, metadata.ResultQuery);
+            Assert.Single(metadata.Lookups);
+            Assert.Contains(metadata.Lookups,
+                lookup => lookup.Key == "$lookupVendedores"
+                          && lookup.Value.Id == "$lookupVendedores"
+                          && lookup.Value.Query == "SELECT CODSEQ, IDENT FROM SENHA WHERE UPPER(IDENT) LIKE UPPER('#term%')");
+            
+            Assert.Single(metadata.Filters);
+            Assert.Contains(metadata.Filters,
+                filter => filter.Name == "vendedor"
+                          && filter is
+                          {
+                              Alias: "Código do Vendedor",
+                              Type: Parser.Enums.FilterTypeEnum.FilterType.Integer,
+                              DefaultValue: FilterSQLExpressionValue defaultValue,
+                              LookupSource: "$lookupVendedores",
+                              Block: false
+                          }
+                          && defaultValue.Equals("a.codvend1"));
+
+        }
+
+        [Fact]
+        public void QueryWithBlockFilters()
+        {
+            var query =
+                @"ELOOKUP $lookupVendedores QUERY(SELECT CODSEQ, IDENT FROM SENHA WHERE UPPER(IDENT) LIKE UPPER('#term%'));
+                EBLOCKFILTER &filtroVendedor TEXT AS 'Código do Vendedor' DATASET($lookupVendedores) DEFAULT a.codvend1;
+
+                select
+                    extract(month from a.cdata) as mes,
+                    extract(year from a.cdata) as ano,
+                    extract(month from a.cdata) || '/' || extract(year from a.cdata) as data,
+                    sum(a.cpfinal) as total_venda
+                from arqos a
+                join vendedor v on (v.ccodigo = a.codvend1)
+                where (1 = 1)
+                and a.cdata BETWEEN  DATEADD(YEAR, -2, CURRENT_DATE) AND CURRENT_DATE
+                <filtroVendedor>
+                  AND v.ccodigo IN (&filtroVendedor) 
+                </filtroVendedor>
+                and a.cgeraos <> -1
+                group by 1,2,3
+                order by 1,2
+                ";
+
+
+            var resultQuery =
+                @"select extract(month from a.cdata) as mes, extract(year from a.cdata) as ano, extract(month from a.cdata) || '/' || extract(year from a.cdata) as data, sum(a.cpfinal) as total_venda from arqos a join vendedor v on (v.ccodigo = a.codvend1) where (1 = 1) and a.cdata BETWEEN DATEADD(YEAR, -2, CURRENT_DATE) AND CURRENT_DATE <filtroVendedor> AND v.ccodigo IN (&filtroVendedor) </filtroVendedor> and a.cgeraos <> -1 group by 1,2,3 order by 1,2";
+
+            var metadata = _queryParser.ExtractQueryMetadata(query);
+
+            Assert.Single(metadata.Filters);
+            Assert.Contains(metadata.Filters,
+                filter => filter.Name == "filtroVendedor"
+                          && filter is
+                          {
+                              Alias: "Código do Vendedor",
+                              Type: Parser.Enums.FilterTypeEnum.FilterType.Text,
+                              DefaultValue: FilterSQLExpressionValue defaultValue,
+                              LookupSource: "$lookupVendedores",
+                              Block: true
+                          }
+                          && defaultValue.Equals("a.codvend1"));
+        }
     }
 }
