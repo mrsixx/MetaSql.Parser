@@ -95,6 +95,8 @@ namespace MetaSql.Parser
             //remove efilters
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "(?<=EFILTER)(.*)(?=;)", String.Empty, RegexOptions.IgnoreCase);
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "EFILTER;", String.Empty, RegexOptions.IgnoreCase);
+            Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "(?<=EBLOCKFILTER)(.*)(?=;)", String.Empty, RegexOptions.IgnoreCase);
+            Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "EBLOCKFILTER;", String.Empty, RegexOptions.IgnoreCase);
 
             //remove elookups
             Metadata.ResultQuery = Regex.Replace(Metadata.ResultQuery, "(?<=ELOOKUP)(.*)(?=;)", String.Empty, RegexOptions.IgnoreCase);

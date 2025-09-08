@@ -417,10 +417,11 @@ namespace MetaSql.Tests
 
 
             var resultQuery =
-                @"select extract(month from a.cdata) as mes, extract(year from a.cdata) as ano, extract(month from a.cdata) || '/' || extract(year from a.cdata) as data, sum(a.cpfinal) as total_venda from arqos a join vendedor v on (v.ccodigo = a.codvend1) where (1 = 1) and a.cdata BETWEEN DATEADD(YEAR, -2, CURRENT_DATE) AND CURRENT_DATE <filtroVendedor> AND v.ccodigo IN (&filtroVendedor) </filtroVendedor> and a.cgeraos <> -1 group by 1,2,3 order by 1,2";
+                @"select extract(month from a.cdata) as mes, extract(year from a.cdata) as ano, extract(month from a.cdata) || '/' || extract(year from a.cdata) as data, sum(a.cpfinal) as total_venda from arqos a join vendedor v on (v.ccodigo = a.codvend1) where (1 = 1) and a.cdata BETWEEN DATEADD(YEAR, -2, CURRENT_DATE) AND CURRENT_DATE <filtroVendedor> AND v.ccodigo IN (@filtroVendedor) </filtroVendedor> and a.cgeraos <> -1 group by 1,2,3 order by 1,2";
 
             var metadata = _queryParser.ExtractQueryMetadata(query);
 
+            Assert.Equal(resultQuery, metadata.ResultQuery);
             Assert.Single(metadata.Filters);
             Assert.Contains(metadata.Filters,
                 filter => filter.Name == "filtroVendedor"
@@ -433,6 +434,19 @@ namespace MetaSql.Tests
                               Block: true
                           }
                           && defaultValue.Equals("a.codvend1"));
+
+            var resultQueryWithBlock =
+                @"select extract(month from a.cdata) as mes, extract(year from a.cdata) as ano, extract(month from a.cdata) || '/' || extract(year from a.cdata) as data, sum(a.cpfinal) as total_venda from arqos a join vendedor v on (v.ccodigo = a.codvend1) where (1 = 1) and a.cdata BETWEEN DATEADD(YEAR, -2, CURRENT_DATE) AND CURRENT_DATE  AND v.ccodigo IN (@filtroVendedor)  and a.cgeraos <> -1 group by 1,2,3 order by 1,2";
+            resultQuery = metadata.GetResultQueryWithBlocks("filtroVendedor");
+
+            Assert.Equal(resultQuery, resultQueryWithBlock);
+            var resultQueryWithoutBlock =
+                @"select extract(month from a.cdata) as mes, extract(year from a.cdata) as ano, extract(month from a.cdata) || '/' || extract(year from a.cdata) as data, sum(a.cpfinal) as total_venda from arqos a join vendedor v on (v.ccodigo = a.codvend1) where (1 = 1) and a.cdata BETWEEN DATEADD(YEAR, -2, CURRENT_DATE) AND CURRENT_DATE  and a.cgeraos <> -1 group by 1,2,3 order by 1,2";
+            resultQuery = metadata.GetResultQueryWithBlocks();
+
+            Assert.Equal(resultQuery, resultQueryWithoutBlock);
+
+
         }
     }
 }
